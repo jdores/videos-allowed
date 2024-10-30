@@ -10,6 +10,82 @@
 
 export default {
 	async fetch(request, env, ctx) {
-		return new Response('Hello World!');
+        return await handleRequest(request, env);
 	},
 };
+
+async function handleRequest(request, env) {
+
+	// Inputs for Cloudflare API calls. Stored locally in .dev.var and in the edge in Workers secrets
+	const accountId = env.ACCOUNT_ID;
+	const userEmail = env.USER_EMAIL;
+	const apiKey = env.API_KEY;
+	const listId = env.LIST_ID;
+  
+	// STEP 01 - Get list
+	const listUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/gateway/lists/${listId}/items`;
+	const response = await fetch(listUrl, {
+		 method: 'GET',
+		 headers: {
+		  'X-Auth-Email': userEmail,
+		  'X-Auth-Key': apiKey,
+		  'Content-Type': 'application/json'
+		 }
+	   });
+	const data = await response.json();
+	console.log(data)
+
+	const video = data.result
+
+	  // Generate HTML output
+	  const html = `
+	  <!DOCTYPE html>
+	  <html lang="en">
+	  <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Youtube videos allowed for viewing</title>
+		<style>
+		  body { font-family: Arial, sans-serif; margin: 40px; }
+		  h1 { color: #333; }
+		  table { width: 100%; border-collapse: collapse; }
+		  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+		  th { background-color: #f2f2f2; }
+		</style>
+	  </head>
+	  <body>
+		<h1>Zero Trust List Contents</h1>
+		<table>
+		  <thead>
+			<tr>
+			  <th>Youtube video</th>
+			  <th>Date added</th>
+			</tr>
+		  </thead>
+		  <tbody>
+			${data.result.map(item => `
+			  <tr>
+				<td><a href="${item.value}">${item.description}</a></td>
+				<td>${item.created_at}</td>
+			  </tr>
+			`).join('')}
+		  </tbody>
+		</table>
+	  </body>
+	  </html>
+	`;
+  
+	// STEP 02 - If Response is OK, we get the WARP virtual IP for each of the device ids
+	// And we store the information fields we care about: device id, email of person associated, name of device, WARP virtual IP
+	if (response.ok) {
+//		  return new Response(`${JSON.stringify(video)}`, {
+//			  headers: { 'Content-Type': 'application/json' }
+//		  });
+		return new Response(html, {
+    		headers: { "content-type": "text/html;charset=UTF-8" },
+		});
+	}
+	 else {
+			  console.error(`Error fetching list: ${JSON.stringify(data)}`);
+	}
+}
