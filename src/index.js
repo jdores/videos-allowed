@@ -35,9 +35,9 @@ async function handleRequest(request, env) {
 	const data = await response.json();
 	console.log(data)
 
-	const video = data.result
+	//const videos = data.result
 
-	  // Generate HTML output
+	// STEP 02 - Generate HTML
 	  const html = `
 	  <!DOCTYPE html>
 	  <html lang="en">
@@ -54,7 +54,7 @@ async function handleRequest(request, env) {
 		</style>
 	  </head>
 	  <body>
-		<h1>Zero Trust List Contents</h1>
+		<h1>Youtube videos allowed for viewing</h1>
 		<table>
 		  <thead>
 			<tr>
@@ -75,10 +75,9 @@ async function handleRequest(request, env) {
 	  </html>
 	`;
   
-	// STEP 02 - If Response is OK, we get the WARP virtual IP for each of the device ids
-	// And we store the information fields we care about: device id, email of person associated, name of device, WARP virtual IP
+	// STEP 03 - Output response
 	if (response.ok) {
-//		  return new Response(`${JSON.stringify(video)}`, {
+//		  return new Response(`${JSON.stringify(videos)}`, {
 //			  headers: { 'Content-Type': 'application/json' }
 //		  });
 		return new Response(html, {
@@ -86,6 +85,6 @@ async function handleRequest(request, env) {
 		});
 	}
 	 else {
-			  console.error(`Error fetching list: ${JSON.stringify(data)}`);
+			  console.error(`Error fetching list: ${JSON.stringify(videos)}`);
 	}
 }
