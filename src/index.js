@@ -25,7 +25,7 @@ async function handleRequest(request, env) {
     // Get the cf_user_email from the query string
     const url = new URL(request.url);
     const cfUserEmail = url.searchParams.get("cf_user_email");
-    const rawUser = cfUserEmail ? cfUserEmail.split('@')[0] : 'User'; // Extract user before @
+    const rawUser = cfUserEmail ? cfUserEmail.split('@')[0] : 'there'; // Extract user before @
     const user = rawUser.charAt(0).toUpperCase() + rawUser.slice(1); // Capitalize the first letter
 
     // STEP 01 - Get list
